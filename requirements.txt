@@ -1,0 +1,9 @@
+python-dotenv
+requests
+praw
+twitchAPI
+steam
+pytrends
+websocket-client
+cryptography
+openai
