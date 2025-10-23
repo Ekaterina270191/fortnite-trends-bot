@@ -193,3 +193,12 @@ data/*.json
 
 # Служебные каталоги и настройки IDE
 .vscode/
+
+# Данные (сырые и агрегаты; глубже 1 уровня)
+data/**/*.csv
+data/**/*.json
+data/**/*.parquet
+data/**/*.xlsx
+reports/
+artifacts/
+'ndata/**/*.csv'ndata/**/*.json
