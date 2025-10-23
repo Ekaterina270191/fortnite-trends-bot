@@ -1,6 +1,8 @@
 import os
+
 import requests
 from dotenv import load_dotenv
+
 
 def main():
     load_dotenv()
@@ -36,6 +38,7 @@ def main():
         print(f"Liquipedia status: {r.status_code}, bytes: {len(r.content)}")
     except Exception as e:
         print("Liquipedia request error:", e)
+
 
 if __name__ == "__main__":
     main()

@@ -1,11 +1,13 @@
 from __future__ import annotations
-from src.utils import load_env, get_env, get_logger
-from src.collector import Collector
-from src.clients.liquipedia_client import LiquipediaClient
+
 from src.clients.epic_store_client import EpicStoreClient
+from src.clients.liquipedia_client import LiquipediaClient
 from src.clients.twitch_client import TwitchClient  # Twitch
+from src.collector import Collector
+from src.utils import get_env, get_logger, load_env
 
 log = get_logger("main")
+
 
 def bootstrap() -> Collector:
     load_env()
@@ -23,6 +25,7 @@ def bootstrap() -> Collector:
     twitch = TwitchClient(twitch_id, twitch_secret) if twitch_id and twitch_secret else None
 
     return Collector(liquipedia=liqui, epic=epic, twitch=twitch)
+
 
 if __name__ == "__main__":
     collector = bootstrap()
