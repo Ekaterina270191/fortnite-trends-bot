@@ -1,43 +1,26 @@
-import os
-import requests
-from dotenv import load_dotenv
+from __future__ import annotations
+from src.utils import load_env, get_env, get_logger
+from src.collector import Collector
+from src.clients.liquipedia_client import LiquipediaClient
+from src.clients.epic_store_client import EpicStoreClient
 
-load_dotenv()
+log = get_logger("main")
 
-# Проверяем ключи из .env
-REQUIRED_KEYS = [
-    "YOUTUBE_API_KEY", "TWITCH_CLIENT_ID", "TWITCH_CLIENT_SECRET",
-    "TMDB_API_KEY", "FORTNITE_API_KEY", "STEAM_API_KEY",
-    "REDDIT_CLIENT_ID", "REDDIT_CLIENT_SECRET", "REDDIT_USER_AGENT",
-    "TRN_API_KEY", "OPENCRITIC_API_KEY", "OPENCRITIC_API_HOST",
-    "EPIC_STORE_API_URL", "LIQUIPEDIA_API_URL"
-]
+def bootstrap() -> Collector:
+    load_env()
 
-missing = [k for k in REQUIRED_KEYS if not os.getenv(k)]
-if missing:
-    print("⚠️ Не найдены переменные в .env:", ", ".join(missing))
-else:
-    print("✅ Все переменные окружения загружены.")
+    user_agent = get_env("REDDIT_USER_AGENT", "FortniteTrendsBot/1.0")
+    liquipedia_url = get_env("LIQUIPEDIA_API_URL", required=True)
+    epic_url = get_env("EPIC_STORE_API_URL", required=True)
 
-# Мини-пинг Epic Games Free Games (публичный JSON)
-epic_url = os.getenv("EPIC_STORE_API_URL")
-try:
-    r = requests.get(epic_url, timeout=15)
-    print(f"Epic Games status: {r.status_code}, bytes: {len(r.content)}")
-except Exception as e:
-    print("Epic Games request error:", e)
+    liqui = LiquipediaClient(base_url=liquipedia_url, user_agent=user_agent)
+    epic = EpicStoreClient(promotions_url=epic_url, user_agent=user_agent)
+    return Collector(liquipedia=liqui, epic=epic)
 
-# Мини-пинг Liquipedia (MediaWiki API). Нужен User-Agent
-liquipedia_url = os.getenv("LIQUIPEDIA_API_URL")
-headers = {"User-Agent": os.getenv("REDDIT_USER_AGENT", "FortniteTrendsBot/1.0")}
-params = {
-    "action": "query",
-    "format": "json",
-    "list": "search",
-    "srsearch": "Fortnite"
-}
-try:
-    r = requests.get(liquipedia_url, headers=headers, params=params, timeout=15)
-    print(f"Liquipedia status: {r.status_code}, bytes: {len(r.content)}")
-except Exception as e:
-    print("Liquipedia request error:", e)
+if __name__ == "__main__":
+    collector = bootstrap()
+    report = collector.quick_check()
+
+    log.info("Quick check:")
+    for name, info in report.items():
+        log.info("  %-12s -> %s", name, info)

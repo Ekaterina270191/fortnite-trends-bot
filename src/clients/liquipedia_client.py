@@ -1,24 +1,22 @@
 from __future__ import annotations
+import requests
+from dataclasses import dataclass
 from typing import Dict, Any
-from .base_client import BaseClient
 
-class LiquipediaClient(BaseClient):
-    """
-    MediaWiki API Liquipedia: ищем по Fortnite/terms.
-    Нужен корректный User-Agent.
-    """
-    def __init__(self, base_url: str, user_agent: str):
-        super().__init__(user_agent=user_agent)
-        self.base_url = base_url
+@dataclass
+class LiquipediaClient:
+    base_url: str
+    user_agent: str
 
-    def search(self, term: str = "Fortnite", limit: int = 25) -> Dict[str, Any]:
+    def ping(self) -> Dict[str, Any]:
         params = {
             "action": "query",
             "format": "json",
             "list": "search",
-            "srsearch": term,
-            "srlimit": limit,
+            "srsearch": "Fortnite",
         }
-        r = self.get(self.base_url, params=params)
-        r.raise_for_status()
-        return r.json()
+        try:
+            r = requests.get(self.base_url, params=params, timeout=15, headers={"User-Agent": self.user_agent})
+            return {"status": r.status_code, "bytes": len(r.content)}
+        except Exception as e:
+            return {"error": str(e)}
